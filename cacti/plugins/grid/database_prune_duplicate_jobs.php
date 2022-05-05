@@ -65,6 +65,8 @@ foreach($parms as $parameter) {
 	}
 }
 
+print date("Y-m-d h:i:sa ") . "\n";
+
 if (read_config_option('grid_partitioning_enable') !== 'on') {
 	print 'FATAL: Record Partitioning is not enabled in RTM.  Exiting!' . PHP_EOL;
 	exit(1);
@@ -106,7 +108,7 @@ if (cacti_sizeof($tables)) {
 	foreach($tables as $table) {
 		db_execute('TRUNCATE TABLE `rdups`');
 
-		if ($table['partition'] > 0) {
+		if ($table['partition'] >= 0) {
 			$ctable    = $table['table_name'] . '_v' . $table['partition'];
 			$partition = $table['partition'];
 		} else {
@@ -169,7 +171,11 @@ function remove_duplicates($ptable, $partition) {
 
 	// Delete duplicate from the older reference tables
 	foreach($tables as $table) {
-		$jtable = $table . '_' . $partition;
+		if ($partition >= 0) {
+			$jtable = $table . '_v' . $partition;
+		} else {
+			$jtable = $table;
+		}
 		db_execute('DELETE p
 			FROM ' . $jtable . ' AS p
 			INNER JOIN `rdups` AS c
