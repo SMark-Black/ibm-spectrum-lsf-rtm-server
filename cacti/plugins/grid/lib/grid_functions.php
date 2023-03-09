@@ -5147,7 +5147,7 @@ function move_records_into_finished_table() {
 	$efficiency_window    = read_config_option('grid_efficiency_window');
 	$refresh_query        = "";
 	$current_time         = time();
-	$prev_time            = db_fetch_cell("SELECT `value` FROM settings WHERE `name` = 'poller_lastrun'", false);
+	$prev_time            = db_fetch_cell("SELECT MAX(`value`) FROM settings WHERE `name` LIKE 'poller_lastrun%'", false);
 	if (empty($prev_time)) {
 		$prev_time      = $current_time - 300;
 		$interval_time  = 300;
