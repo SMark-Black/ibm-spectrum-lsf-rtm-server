@@ -1,5 +1,9 @@
 ## ChangeLog
 
+--- develop ---
+
+* issue#585:  The return Web page is wrong after clicking the "return" button in the "edit threshold"
+
 --- 1.5.3 ---
 
 * issue#463: php error - undefined index dnotes
