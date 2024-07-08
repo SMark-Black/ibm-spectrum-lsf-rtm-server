@@ -2,7 +2,7 @@
 // $Id$
 /*
  +-------------------------------------------------------------------------+
- | Copyright IBM Corp. 2006, 2022                                          |
+ | Copyright IBM Corp. 2006, 2023                                          |
  |                                                                         |
  | Licensed under the Apache License, Version 2.0 (the "License");         |
  | you may not use this file except in compliance with the License.        |
@@ -128,12 +128,12 @@ function partition_create($table, $min_time_field, $max_time_field, $partition_v
 				if ($min_time_field != "submit_time") {
 					$alt_min_time1 = db_fetch_cell_prepared("SELECT MIN($max_time_field)
 							FROM $new_table
-							WHERE (?<='1971-02-01')
-							AND (?>'1971-02-01')", array($min_time_field, $max_time_field));
+							WHERE ($min_time_field <= '1971-02-01')
+							AND ($max_time_field > '1971-02-01')");
 
 					$alt_min_time2 = db_fetch_cell_prepared("SELECT MIN($min_time_field)
 							FROM $new_table
-							WHERE (?>'1971-02-01')", array($min_time_field));
+							WHERE ($min_time_field > '1971-02-01')");
 				} else {
 					$alt_min_time1 = db_fetch_cell_prepared("SELECT MIN($max_time_field)
 							FROM $new_table
@@ -146,10 +146,10 @@ function partition_create($table, $min_time_field, $max_time_field, $partition_v
 				$max_time = db_fetch_cell("SELECT MAX($max_time_field)
 					FROM $new_table");
 
-				if (((strtotime($alt_min_time1) > 87000) && !empty($alt_min_time1))
-					&& ((strtotime($alt_min_time2) > 87000) && !empty($alt_min_time2))) {
+				if ((!empty($alt_min_time1) && (strtotime($alt_min_time1) > 87000))
+						&& (!empty($alt_min_time2) && (strtotime($alt_min_time2) > 87000))) {
 					$min_time = min($alt_min_time1, $alt_min_time2);
-				} else if ((strtotime($alt_min_time1) > 87000) && !empty($alt_min_time1)) {
+				} else if (!empty($alt_min_time1) && (strtotime($alt_min_time1) > 87000)) {
 					$min_time = $alt_min_time1;
 				} else {
 					$min_time = $alt_min_time2;
@@ -250,7 +250,6 @@ function partition_get_partitions_for_query($table, $min_time, $max_time, $type 
 	$max_partition_time = db_fetch_cell_prepared("SELECT MAX(max_time)
 		FROM grid_table_partitions
 		WHERE table_name=?", array($table));
-
 	if (strtotime($max_partition_time) < strtotime($max_time)) {
 		$partitions = array('MAIN' => $table) + $partitions;
 	}
